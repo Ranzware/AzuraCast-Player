@@ -1,3 +1,3 @@
 export default {
-  apiBaseUrl: 'https://s1.cloudmu.id',
+  apiBaseUrl: 'https://radio.mp3islam.com',
 }
