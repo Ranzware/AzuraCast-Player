@@ -11,13 +11,13 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git@github.com:PeWe79/AzuraCast-Player-Main.git"
+		"url": "git@github.com:Ranzware/AzuraCast-Player-Main.git"
 	},
 	"keywords": [],
 	"author": "",
 	"license": "ISC",
 	"bugs": {
-		"url": "https://github.com/PeWe79/AzuraCast-Player-Main/issues"
+		"url": "https://github.com/Ranzware/AzuraCast-Player-Main/issues"
 	},
 	"devDependencies": {
 		"@babel/core": "^7.26.0",
