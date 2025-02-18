@@ -1,7 +1,7 @@
 <!doctype html>
 <html class="nojs" lang="en">
   <head>
-    <title>AzuraCast Player</title>
+    <title>Radio Quran</title>
 
     <meta charset="UTF-8" />
     <meta http-equiv="x-ua-compatible" content="IE=Edge, chrome=1" />
@@ -90,6 +90,22 @@
         })
       })(window)
     </script>
+<!-- Matomo -->
+<script>
+  var _paq = window._paq = window._paq || [];
+  /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+  _paq.push(['trackPageView']);
+  _paq.push(['enableLinkTracking']);
+  (function() {
+    var u="https://mat.ranzware.com/";
+    _paq.push(['setTrackerUrl', u+'matomo.php']);
+    _paq.push(['setSiteId', '17']);
+    var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+    g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+  })();
+</script>
+<!-- End Matomo Code -->
+    
   </head>
   <body>
     <!-- initial spinner -->
@@ -246,7 +262,7 @@
                   <!-- description -->
                   <div class="push-bottom pad-bottom fx fx-slide-up fx-delay-3">
                     <div class="push-bottom">
-                      <span class="text-secondary">Mixed by DJ {{ station.name || "N/A" }}.</span>
+                      <span class="text-secondary"> {{ station.name || "N/A" }}.</span>
                       <br />
                       <span class="text-bright text-capitalize">{{ station.title }}</span>
                       <span class="text-faded">Playlist:</span>&nbsp;
@@ -375,12 +391,12 @@
                 <div class="flex-item flex-1">
                   <div class="push-bottom">
                     <h5 class="text-nowrap fx fx-fade-in fx-delay-1">
-                      <i class="ico ico-collection"></i>&nbsp; Recent Tracks
+                      <i class="ico ico-collection"></i>&nbsp; Recent Sura
                     </h5>
                   </div>
 
                   <div class="card push-bottom fx fx-slide-left fx-delay-4" v-if="!hasHistorySongs">
-                    There are no songs loaded yet for this station.
+                    There are no Sura loaded yet for this station.
                   </div>
 
                   <ul class="player-tracklist push-bottom" v-if="hasHistorySongs">
@@ -575,7 +591,7 @@
                       <i class="text-faded ico ico-favs-check"></i> &nbsp; Saved Favorites
                     </button>
                     <button type="button" @click="sortBy( 'genre', 'asc' )">
-                      <i class="text-faded ico ico-collection"></i> &nbsp; Music Genre
+                      <i class="text-faded ico ico-collection"></i> &nbsp; Mushaf
                     </button>
                   </span>
                 </span>
