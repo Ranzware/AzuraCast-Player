@@ -3,6 +3,14 @@
  */
 import Sphere from './sphere'
 
+function debounce(fn, ms) {
+  let timer
+  return (...args) => {
+    clearTimeout(timer)
+    timer = setTimeout(() => fn.apply(this, args), ms)
+  }
+}
+
 export default {
   _wrap: null,
   _canvas: null,
@@ -12,11 +20,13 @@ export default {
   _box: null,
   _mouse: { x: 0, y: 0 },
   _objects: [],
+  _handlers: {},
 
   // setup animation canvas
   setupCanvas() {
     this._wrap = document.querySelector('#player-wrap')
     this._canvas = document.querySelector('#player-canvas')
+    if (!this._wrap || !this._canvas) return
     this._box = this._wrap.getBoundingClientRect()
 
     // setup scene and renderer
@@ -28,7 +38,7 @@ export default {
       precision: 'lowp',
     })
     this._renderer.setClearColor(0x000000, 0)
-    this._renderer.setPixelRatio(window.devicePixelRatio)
+    this._renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 
     // setup camera
     this._camera = new THREE.PerspectiveCamera(60, this._box.width / this._box.height, 0.1, 20000)
@@ -43,14 +53,17 @@ export default {
       o.create(this._box, this._scene)
     }
     // setup events
-    window.addEventListener('mousemove', this.updateMouse.bind(this))
-    window.addEventListener('resize', this.updateSize.bind(this))
+    this._handlers.mousemove = this.updateMouse.bind(this)
+    this._handlers.resize = debounce(this.updateSize.bind(this), 100)
+    window.addEventListener('mousemove', this._handlers.mousemove, { passive: true })
+    window.addEventListener('resize', this._handlers.resize)
     this.updateMouse()
     this.updateSize()
   },
 
   // update custom objects in 3d scene
   updateObjects(freq) {
+    if (!this._renderer) return
     for (let o of this._objects) {
       o.update(this._box, this._mouse, freq)
     }
@@ -59,7 +72,7 @@ export default {
 
   // update canvas size
   updateSize() {
-    if (!this._wrap || !this._canvas) return
+    if (!this._wrap || !this._canvas || !this._renderer) return
     this._box = this._wrap.getBoundingClientRect()
     this._canvas.width = this._box.width
     this._canvas.height = this._box.height
@@ -81,5 +94,25 @@ export default {
       this._mouse.x = centerX
       this._mouse.y = centerY
     }
+  },
+
+  // cleanup scene resources
+  destroy() {
+    if (this._handlers.mousemove) {
+      window.removeEventListener('mousemove', this._handlers.mousemove)
+    }
+    if (this._handlers.resize) {
+      window.removeEventListener('resize', this._handlers.resize)
+    }
+    this._handlers = {}
+    if (this._renderer) {
+      this._renderer.dispose()
+      this._renderer = null
+    }
+    this._scene = null
+    this._camera = null
+    this._objects = []
+    this._wrap = null
+    this._canvas = null
   },
 }

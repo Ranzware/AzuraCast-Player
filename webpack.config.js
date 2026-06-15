@@ -9,7 +9,7 @@ const TerserPlugin = require('terser-webpack-plugin')
 const isProd = process.env.NODE_ENV === 'production'
 
 // dev server and globals styles
-const serverHost = '0.0.0.0'
+const serverHost = '127.0.0.1'
 const serverPort = 8080
 const basePath = path.join(__dirname, '/')
 const appEntry = './src/app.js'
@@ -17,6 +17,8 @@ const bundleDir = './public/bundles/'
 
 // webpack config
 module.exports = {
+  mode: isProd ? 'production' : 'development',
+  devtool: isProd ? false : 'source-map',
   entry: {
     app: appEntry,
   },
@@ -38,13 +40,13 @@ module.exports = {
         use: [
           MiniCssExtractPlugin.loader,
           // Translates CSS into CommonJS
-          { loader: 'css-loader', options: { url: false, sourceMap: true } },
+          { loader: 'css-loader', options: { url: false, sourceMap: !isProd } },
           // Compiles Sass to CSS
           {
             loader: 'sass-loader',
             options: {
               implementation: require('sass'),
-              sourceMap: true,
+              sourceMap: !isProd,
             },
           },
         ],
@@ -63,7 +65,7 @@ module.exports = {
     }),
   ],
   optimization: {
-    minimize: true,
+    minimize: isProd,
     minimizer: [
       // CSS minimizer
       new CssMinimizerPlugin({
@@ -80,11 +82,11 @@ module.exports = {
       // Javascript minimizer
       new TerserPlugin({
         terserOptions: {
-          ecma: undefined,
+          ecma: 2018,
           warnings: false,
           parse: {},
           compress: {},
-          mangle: true, // Note `mangle.properties` is `false` by default.
+          mangle: true,
           module: false,
           output: null,
           toplevel: false,
@@ -105,34 +107,15 @@ module.exports = {
   devServer: {
     host: serverHost,
     port: serverPort,
-    compress: true,
     hot: true,
     liveReload: true,
     open: true,
-    compress: false,
+    compress: true,
   },
 
   performance: {
-    hints: 'error',
+    hints: isProd ? 'warning' : false,
     maxEntrypointSize: 614400,
     maxAssetSize: 614400,
   },
-}
-
-if (isProd) {
-  module.exports.plugins = (module.exports.plugins || []).concat([
-    new webpack.DefinePlugin({
-      'process.env': {
-        NODE_ENV: '"production"',
-      },
-    }),
-    new webpack.optimize.TerserPlugin({
-      compress: {
-        warnings: false,
-      },
-    }),
-    new webpack.LoaderOptionsPlugin({
-      minimize: true,
-    }),
-  ])
 }

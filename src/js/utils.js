@@ -2,10 +2,16 @@
  * Common utils
  */
 export default {
+  // escape regex special characters in user input
+  escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  },
+
   // get search results off a list for an obj key
   search(list, key, search) {
-    const regxp = new RegExp('^(' + search + ')', 'i')
-    return list.filter((item) => regxp.test(item[key]))
+    if (!search || typeof search !== 'string' || search.length > 100) return []
+    const regxp = new RegExp('^(' + this.escapeRegExp(search) + ')', 'i')
+    return list.filter((item) => item && regxp.test(item[key]))
   },
 
   // sort objects in an array by a key

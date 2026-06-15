@@ -82,7 +82,7 @@ const app = createApp({
     // filter stations list
     channelsList() {
       let list = this.stations.slice()
-      let search = this.searchText
+      const search = this.searchText
         .replace(/[^\w\s\-]+/g, '')
         .replace(/[\r\s\t\n]+/g, ' ')
         .trim()
@@ -93,13 +93,11 @@ const app = createApp({
       if (this.sortParam) {
         list = _utils.sort(list, this.sortParam, this.sortOrder, false)
       }
-      if (this.station.shortcode) {
-        list = list.map((i) => {
-          i.active = this.station.shortcode === i.shortcode ? true : false
-          return i
-        })
-      }
-      return list
+      const activeShortcode = this.station.shortcode
+      return list.map((i) => ({
+        ...i,
+        active: activeShortcode === i.shortcode,
+      }))
     },
 
     // sort-by label for buttons, etc
@@ -163,7 +161,7 @@ const app = createApp({
     setError(key, err) {
       let errors = Object.assign({}, this.errors)
       errors[key] = String(err || '').trim()
-      if (err) console.warn('ERROR(' + key + '):', err)
+      if (err) console.warn('ERROR(' + key + '):', String(err))
       this.errors = errors
     },
 
@@ -188,21 +186,28 @@ const app = createApp({
     setupEvents() {
       document.addEventListener('visibilitychange', () => {
         this.visible = document.visibilityState === 'visible'
+        if (this.playing && this.visible) {
+          this.updateCanvas()
+        }
       })
-      window.addEventListener('hashchange', () => this.applyRoute(window.location.hash))
+      this._hashChangeHandler = () => this.applyRoute(window.location.hash)
+      window.addEventListener('hashchange', this._hashChangeHandler)
       window.addEventListener('keydown', this.onKeyboard)
       // audio related events
       _audio.on('waiting', this.onWaiting)
       _audio.on('playing', this.onPlaying)
       _audio.on('ended', this.onEnded)
       _audio.on('error', this.onError)
+      _audio.on('canplay', this.onPlaying)
     },
 
     // hide spinner and show player
     initPlayer() {
       setTimeout(() => {
-        document.querySelector('#_spnr').style.display = 'none'
-        document.querySelector('#player-wrap').style.opacity = '1'
+        const spnr = document.querySelector('#_spnr')
+        const wrap = document.querySelector('#player-wrap')
+        if (spnr) spnr.style.display = 'none'
+        if (wrap) wrap.style.opacity = '1'
         this.init = true
       }, 100)
     },
@@ -234,7 +239,9 @@ const app = createApp({
       if (state) {
         this.sbActive = true // bring to front
         this.sbVisible = true // show drawer
-        this.$refs.sidebarDrawer.focus()
+        this.$nextTick(() => {
+          if (this.$refs.sidebarDrawer) this.$refs.sidebarDrawer.focus()
+        })
       } else {
         this.sbVisible = false
         setTimeout(() => {
@@ -337,18 +344,20 @@ const app = createApp({
 
     // audio visualizer animation loop
     updateCanvas() {
-      this.anf = requestAnimationFrame(this.updateCanvas)
-      if (this.visible) {
-        const freq = _audio.getFreqData(this.playing)
-        _scene.updateObjects(freq)
+      if (!this.visible || !this.playing) {
+        this.anf = null
+        return
       }
+      const freq = _audio.getFreqData(this.playing)
+      _scene.updateObjects(freq)
+      this.anf = requestAnimationFrame(this.updateCanvas)
     },
 
     // get stations data from api
     getChannels(sidebar) {
       _api.getChannels((err, stations) => {
         if (err) return this.setError('stations', err)
-        this.stations = stations
+        this.stations = Array.isArray(stations) ? Object.freeze(stations) : []
         this.clearError('stations')
         this.updateCurrentChannel()
         this.applyRoute(window.location.hash, sidebar)
@@ -358,6 +367,9 @@ const app = createApp({
     // get songs list for a station from api
     getSongs(station, cb) {
       if (!station || !station.shortcode || !station.songsurl) return
+      // abort pending requests and store current station token
+      this._abortSongs()
+      this._songsToken = station.shortcode
       if (!this.isCurrentChannel(station)) {
         this.songNow = {}
         this.nowPlaying = {}
@@ -365,15 +377,16 @@ const app = createApp({
         this.nextPlay = {}
       }
 
-      _api.getSongs(station, async (err, np) => {
+      _api.getSongs(station, this._songsController.signal, async (err, np) => {
         if (err) return this.setError('np', err)
+        if (this._songsToken !== station.shortcode) return
         if (typeof cb === 'function') cb(np)
         this.songNow = np.now_playing.song
         this.nowPlaying = np.now_playing
-        this.nextSong = np.playing_next.song
-        this.nextPlay = np.playing_next
-        document.title = np.now_playing.song.text
-        const historySong = np.song_history
+        this.nextSong = np.playing_next ? np.playing_next.song : {}
+        this.nextPlay = np.playing_next || {}
+        document.title = this.sanitizeTitle(np.now_playing.song.text)
+        const historySong = np.song_history || []
         this.clearError('np')
 
         this.nowPlayingData(this.songNow)
@@ -382,48 +395,62 @@ const app = createApp({
       })
     },
 
-    async getDataFrom(n) {
-      let dataFrom
-      dataFrom = await this.getiTunes(n)
+    // abort pending songs/iTunes requests
+    _abortSongs() {
+      if (this._songsController) this._songsController.abort()
+      this._songsController = new AbortController()
+    },
 
+    // sanitize document title from remote data
+    sanitizeTitle(text) {
+      return String(text || '')
+        .replace(/[ --]/g, '')
+        .slice(0, 120)
+    },
+
+    // in-memory cache for iTunes artwork/metadata
+    _itunesCache: new Map(),
+
+    async getDataFrom(n) {
+      if (!n || !n.text) {
+        return { title: n.title, artist: n.artist, album: n.album, artworkUrl: n.art }
+      }
+      const key = n.text
+      if (this._itunesCache.has(key)) return this._itunesCache.get(key)
+      const dataFrom = await this.getiTunes(n)
+      if (this._itunesCache.size > 200) this._itunesCache.delete(this._itunesCache.keys().next().value)
+      this._itunesCache.set(key, dataFrom)
       return dataFrom
     },
 
-    async getiTunes(t) {
+    async getiTunes(t, signal) {
       const track = t.text
-      const resp = await fetch(
-        `https://itunes.apple.com/search?limit=1&media=music&term=${encodeURIComponent(track)}`,
-      )
+      const url = `https://itunes.apple.com/search?limit=1&media=music&term=${encodeURIComponent(track)}`
+      try {
+        const resp = await fetch(url, { signal })
 
-      if (resp.status === 403) {
-        const results = {
-          title: t.title,
-          artist: t.artist,
-          album: t.album,
-          artworkUrl: t.art,
+        if (resp.status === 403) {
+          return { title: t.title, artist: t.artist, album: t.album, artworkUrl: t.art }
         }
-        return results
-      }
 
-      const data = resp.ok ? await resp.json() : {}
-      if (!data.results || data.results.length === 0)
+        const data = resp.ok ? await resp.json() : {}
+        if (!data.results || data.results.length === 0) {
+          return { title: t.title, artist: t.artist, album: t.album, artworkUrl: t.art }
+        }
+
+        const itunes = data.results[0]
         return {
-          title: t.title,
-          artist: t.artist,
-          album: t.album,
-          artworkUrl: t.art,
+          title: itunes.trackName || t.title,
+          artist: itunes.artistName || t.artist,
+          album: itunes.collectionName || t.album,
+          artworkUrl: itunes.artworkUrl100
+            ? itunes.artworkUrl100.replace('100x100', '512x512')
+            : t.art,
         }
-
-      const itunes = data.results[0]
-      const results = {
-        title: itunes.trackName || t.title,
-        artist: itunes.artistName || t.artist,
-        album: itunes.collectionName || t.album,
-        artworkUrl: itunes.artworkUrl100
-          ? itunes.artworkUrl100.replace('100x100', '512x512')
-          : t.art,
+      } catch (e) {
+        if (e.name === 'AbortError') return { title: t.title, artist: t.artist, album: t.album, artworkUrl: t.art }
+        return { title: t.title, artist: t.artist, album: t.album, artworkUrl: t.art }
       }
-      return results
     },
 
     async nowPlayingData(t) {
@@ -438,17 +465,19 @@ const app = createApp({
 
     async histPlayingData(t) {
       this.songHistory = t.slice(0, 5)
-      this.songHistory.forEach(async (item, index) => {
-        const data = item.song
-        await this.getDataFrom(data).then((item) => {
-          if (!this.songHistoryCoverArt) {
-            this.songHistoryCoverArt = {}
-            this.songHistoryAlbum = {}
-          }
+      this.songHistoryCoverArt = {}
+      this.songHistoryAlbum = {}
+      for (let index = 0; index < this.songHistory.length; index++) {
+        const data = this.songHistory[index].song
+        if (!data || !data.text) continue
+        try {
+          const item = await this.getDataFrom(data)
           this.songHistoryCoverArt[index] = item.artworkUrl
           this.songHistoryAlbum[index] = item.album
-        })
-      })
+        } catch (e) {
+          // ignore aborted/stale lookups
+        }
+      }
     },
 
     // checks is a station is currently selected
@@ -460,14 +489,16 @@ const app = createApp({
 
     // update data for current selected channel
     updateCurrentChannel() {
+      const currentShortcode = this.station.shortcode || ''
       for (let c of this.stations) {
         // see if channel has been saved as a favorite
         c.favorite = this.favorites.indexOf(c.shortcode) >= 0
         // see if channel is currently selected
-        if (this.isCurrentChannel(c)) {
-          this.station = Object.assign(this.station, c)
-          c.active = true
-        }
+        c.active = currentShortcode && currentShortcode === c.shortcode
+      }
+      if (currentShortcode) {
+        const current = this.stations.find((c) => c.shortcode === currentShortcode)
+        if (current) this.station = Object.assign({}, this.station, current)
       }
     },
 
@@ -548,6 +579,7 @@ const app = createApp({
       this.clearError('stream')
       this.playing = true
       this.loading = false
+      if (!this.anf) this.updateCanvas()
     },
 
     // audio stream ended
@@ -559,13 +591,14 @@ const app = createApp({
     // error loading stream
     onError(e) {
       this.closeAudio()
+      const title = this.station.title || 'Unknown station'
       this.setError(
         'stream',
-        `The selected stream (${this.station.title}) could not load, or stopped loading due to network problems.`,
+        `The selected stream (${title}) could not load, or stopped loading due to network problems.`,
       )
       this.playing = false
       this.loading = false
-      console.log('%c Errot => ' + e.message)
+      console.error('Audio error:', e && e.message)
     },
 
     // start tracking playback time
@@ -601,20 +634,9 @@ const app = createApp({
 
     // convert timestamp get playing at
     getPlayAt(numeric) {
-      // Convert Unix timestamp to milliseconds
       const date = new Date(numeric * 1000)
-      date.toLocaleString()
-      date.toDateString()
-      date.toLocaleTimeString()
-      // Define options for formatting just get hour & minutes
-      // weekday: "long", year: "numeric", month: "short",
-      // day: "numeric", hour: "2-digit", minute: "2-digit",
-      const options = {
-        hour: '2-digit',
-        minute: '2-digit',
-      }
-      const formattedDate = date.toLocaleTimeString('en-us', options)
-      return formattedDate
+      const options = { hour: '2-digit', minute: '2-digit' }
+      return date.toLocaleTimeString('en-us', options)
     },
 
     // pass height property to css
@@ -624,9 +646,17 @@ const app = createApp({
 
     // keep track of window height
     updateHeight() {
-      let root = document.querySelector(':root')
-      this.setCssHeight(root, window.innerHeight)
-      window.addEventListener('resize', (e) => this.setCssHeight(root, window.innerHeight))
+      if (this._resizeHandler) return
+      const root = document.querySelector(':root')
+      let lastHeight = window.innerHeight
+      this.setCssHeight(root, lastHeight)
+      this._resizeHandler = () => {
+        const h = window.innerHeight
+        if (h === lastHeight) return
+        lastHeight = h
+        this.setCssHeight(root, h)
+      }
+      window.addEventListener('resize', this._resizeHandler)
     },
 
     // ...
@@ -650,6 +680,11 @@ const app = createApp({
   destroyed() {
     this.closeAudio()
     this.clearTimers()
+    this._abortSongs()
+    if (this._hashChangeHandler) window.removeEventListener('hashchange', this._hashChangeHandler)
+    if (this._resizeHandler) window.removeEventListener('resize', this._resizeHandler)
+    window.removeEventListener('keydown', this.onKeyboard)
+    _scene.destroy()
   },
 })
 

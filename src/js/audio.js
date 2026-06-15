@@ -11,6 +11,7 @@ export default {
   _hasfreq: false,
   _counter: 0,
   _events: {},
+  _listeners: [],
 
   // setup audio routing, called after user interaction, setup once
   setupAudio() {
@@ -27,12 +28,18 @@ export default {
     this._source.connect(this._gain)
     this._gain.connect(this._context.destination)
 
-    this._audio.addEventListener('canplay', () => {
+    this._onCanPlay = () => {
       this._freq = new Uint8Array(this._analyser.frequencyBinCount)
       this._audio.play()
-    })
-    ;['waiting', 'playing', 'ended', 'stalled', 'error'].forEach((event) => {
-      this._audio.addEventListener(event, (e) => this.emit(event, e))
+    }
+    this._audio.addEventListener('canplay', this._onCanPlay)
+
+    const events = ['waiting', 'playing', 'ended', 'stalled', 'error']
+    this._listeners = []
+    events.forEach((event) => {
+      const handler = (e) => this.emit(event, e)
+      this._listeners.push({ event, handler })
+      this._audio.addEventListener(event, handler)
     })
   },
 
@@ -78,26 +85,30 @@ export default {
   // set audio volume
   setVolume(volume) {
     if (!this._gain) return
-    volume = parseFloat(volume) || 0
-    volume = volume > 1 ? volume / 100 : volume
-    volume = volume > 1 ? 1 : volume
-    volume = volume < 0 ? 0 : volume
-    this._audio.muted = volume <= 0 ? true : false
-    this._gain.gain.value = volume
+    const v = parseFloat(volume)
+    if (Number.isNaN(v)) return
+    let normalized = Math.max(0, Math.min(1, v > 1 ? v / 100 : v))
+    this._audio.muted = normalized <= 0
+    this._gain.gain.value = normalized
   },
 
-  // stop playing audio
+  // stop playing audio and release resources
   stopAudio() {
-    if (!this._audio) return
-    try {
-      this._audio.pause()
-    } catch (e) {}
-    try {
-      this._audio.stop()
-    } catch (e) {}
-    try {
-      this._audio.close()
-    } catch (e) {}
+    if (this._audio) {
+      try {
+        this._audio.pause()
+      } catch (e) {}
+      this._audio.src = ''
+      this._audio.removeAttribute('src')
+      this._audio.load()
+    }
+    if (this._context && this._context.state !== 'closed') {
+      try {
+        this._context.suspend()
+      } catch (e) {}
+    }
+    this._hasfreq = false
+    this._counter = 0
   },
 
   // play audio source url
@@ -115,5 +126,29 @@ export default {
     this._audio.crossOrigin = 'anonymous'
     this._audio.autoplay = false
     this._audio.load()
+  },
+
+  // fully release audio resources
+  destroy() {
+    this.stopAudio()
+    if (this._audio) {
+      if (this._onCanPlay) this._audio.removeEventListener('canplay', this._onCanPlay)
+      this._listeners.forEach(({ event, handler }) => {
+        try {
+          this._audio.removeEventListener(event, handler)
+        } catch (e) {}
+      })
+      this._listeners = []
+      this._audio = null
+    }
+    if (this._context && this._context.state !== 'closed') {
+      try {
+        this._context.close()
+      } catch (e) {}
+    }
+    this._context = null
+    this._source = null
+    this._gain = null
+    this._analyser = null
   },
 }

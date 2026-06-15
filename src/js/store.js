@@ -14,11 +14,20 @@ export default {
   // get saved data
   get(key) {
     if (!this._isStr(key)) return
-    const json = window.localStorage.getItem(key) || '{}'
-    const parsed = JSON.parse(json) || {}
-    const { time, expire, data } = parsed
-    if (this._isExpired(time, expire)) this.delete(key)
-    return data
+    const raw = window.localStorage.getItem(key)
+    if (!raw) return
+    try {
+      const parsed = JSON.parse(raw)
+      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return
+      const { time, expire, data } = parsed
+      if (this._isExpired(time, expire)) {
+        this.delete(key)
+        return
+      }
+      return data
+    } catch (e) {
+      return
+    }
   },
 
   // remove saved data
