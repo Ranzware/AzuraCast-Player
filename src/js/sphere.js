@@ -1,72 +1,95 @@
 /**
- * ThreeJS scene sphere object
+ * ThreeJS scene calm glowing orb object (Islamic-inspired visualizer)
  */
 export default {
   group: null,
-  shapes: [],
+  orb: null,
+  glow: null,
+  ring: null,
   move: new THREE.Vector3(0, 0, 0),
   touch: false,
-  ease: 8,
+  ease: 12,
 
-  // create and add sphere to scene
+  // create and add orb to scene
   create(box, scene) {
     this.group = new THREE.Object3D()
-    let shape1 = new THREE.CircleGeometry(1, 10)
-    let shape2 = new THREE.CircleGeometry(2, 20)
-    let points = new THREE.SphereGeometry(100, 30, 14).vertices
-    let material = new THREE.MeshNormalMaterial({
+
+    // main glowing orb
+    const geometry = new THREE.IcosahedronGeometry(60, 3)
+    const material = new THREE.MeshBasicMaterial({
+      color: 0x10b981,
       transparent: true,
-      opacity: 0,
+      opacity: 0.18,
+      wireframe: true,
+    })
+    this.orb = new THREE.Mesh(geometry, material)
+
+    // inner soft glow core
+    const coreGeometry = new THREE.IcosahedronGeometry(46, 2)
+    const coreMaterial = new THREE.MeshBasicMaterial({
+      color: 0x10b981,
+      transparent: true,
+      opacity: 0.08,
+    })
+    this.core = new THREE.Mesh(coreGeometry, coreMaterial)
+
+    // outer crescent ring
+    const ringGeometry = new THREE.TorusGeometry(90, 2, 16, 80)
+    const ringMaterial = new THREE.MeshBasicMaterial({
+      color: 0xf59e0b,
+      transparent: true,
+      opacity: 0.22,
       side: THREE.DoubleSide,
     })
-    let center = new THREE.Vector3(0, 0, 0)
-    let radius = 12
+    this.ring = new THREE.Mesh(ringGeometry, ringMaterial)
+    this.ring.rotation.x = Math.PI / 2 + 0.5
+    this.ring.rotation.y = 0.3
 
-    for (let i = 0; i < points.length; i++) {
-      let { x, y, z } = points[i]
-      let home = { x, y, z }
-      let cycle = THREE.Math.randInt(0, 100)
-      let pace = THREE.Math.randInt(10, 30)
-      let shape = new THREE.Mesh(i % 2 ? shape1 : shape2, material)
+    this.group.add(this.orb)
+    this.group.add(this.core)
+    this.group.add(this.ring)
 
-      shape.position.set(x, y, z)
-      shape.lookAt(center)
-      shape.userData = { radius, cycle, pace, home }
-      this.group.add(shape)
-    }
     this.touch =
       'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0
+
     this.group.position.set(40, 5, 0)
     this.group.rotation.x = Math.PI / 2 + 0.6
     scene.add(this.group)
   },
 
-  // animate sphere on frame loop
+  // animate orb on frame loop
   update(box, mouse, freq) {
-    let xoff = box.width < 800 ? 0 : 40
-    let zoff = box.width < 800 ? -60 : 20
-    let zmod = 0.5 + 0.5 * freq
+    const xoff = box.width < 800 ? 0 : 40
+    const zoff = box.width < 800 ? -80 : 0
 
-    // prevent sphere from moving left/right on touch devices
+    // prevent orb from moving on touch devices
     if (this.touch) {
       this.group.position.x = xoff
     } else {
-      this.move.x = xoff + -(mouse.x * 0.012)
+      this.move.x = xoff + -(mouse.x * 0.006)
+      this.move.y = -(mouse.y * 0.006)
       this.group.position.x += (this.move.x - this.group.position.x) / this.ease
       this.group.position.y += (this.move.y - this.group.position.y) / this.ease
     }
-    // move on z-axis with music data and rotate
-    this.group.position.z = zoff + 80 * freq
-    this.group.rotation.y -= 0.003
 
-    // adjust individual sphere points
-    for (let i = 0; i < this.group.children.length; i++) {
-      let shape = this.group.children[i]
-      let { radius, cycle, pace, home } = shape.userData
-      shape.material.opacity = 0.2 + 0.8 * freq
-      shape.position.set(home.x, home.y, home.z)
-      shape.translateZ(zmod * Math.sin(cycle / pace) * radius)
-      shape.userData.cycle++
-    }
+    // gentle z-breathing with music data
+    this.group.position.z = zoff + 30 * freq
+
+    // very slow, calm rotations
+    this.group.rotation.y -= 0.0015
+    this.group.rotation.z += 0.0008
+
+    this.orb.rotation.x += 0.001
+    this.orb.rotation.y -= 0.0015
+    this.core.rotation.x -= 0.0008
+    this.core.rotation.y += 0.001
+
+    this.ring.rotation.z += 0.0005
+    this.ring.rotation.y += 0.0003
+
+    // pulsing opacity based on audio frequency
+    this.orb.material.opacity = 0.12 + 0.16 * freq
+    this.core.material.opacity = 0.05 + 0.12 * freq
+    this.ring.material.opacity = 0.12 + 0.18 * freq
   },
 }

@@ -110,7 +110,7 @@ const app = createApp({
         case 'favorite':
           return 'Saved Favorites'
         case 'genre':
-          return 'Music Genre'
+          return 'Mushaf / Genre'
       }
     },
 

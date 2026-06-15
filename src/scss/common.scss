@@ -29,7 +29,7 @@
 // visible but not usable
 .disabled, [disabled] {
   pointer-events: none;
-  opacity: 0.5;
+  opacity: 0.4;
 }
 
 // clickable elms
@@ -40,8 +40,16 @@
 // common card style
 .card {
   padding: variables.$padSpace;
-  background-image: radial-gradient(ellipse at top left, rgba(black, 0.5) 0%, rgba(black, 0) 90%);
   border-radius: variables.$lineJoin;
+  @include variables.glass;
+  transition: transform variables.$fxSpeed variables.$fxEase,
+              background-color variables.$fxSpeed variables.$fxEase,
+              border-color variables.$fxSpeed variables.$fxEase;
+
+  &:hover {
+    background-color: variables.$colorCardHover;
+    border-color: rgba(variables.$colorSecondary, 0.25);
+  }
 
   .heading {
     margin: 0 0 .5rem 0;
@@ -51,7 +59,7 @@
 // hover state on text elements
 .hover-text {
   &:hover {
-    color: color.adjust(variables.$colorSecondary, $lightness: 10%);
+    color: variables.$colorSecondary;
   }
 }
 

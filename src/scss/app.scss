@@ -15,24 +15,36 @@
 // app root
 .app-wrap {
   display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: nowrap;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
   width: 100%;
-  height: 100vh;
-  max-height: var(--height, 100vh);
+  min-height: var(--height, 100vh);
+  padding: variables.$padSpace;
+  box-sizing: border-box;
+
+  @media #{variables.$screenMedium} {
+    padding: calc(variables.$padSpace * 1.5);
+  }
 }
 
 // player container
 .player-wrap {
-  display: block;
-  overflow: hidden;
+  display: flex;
+  flex-direction: column;
   position: relative;
-  flex: 1;
   width: 100%;
-  height: var(--height, 100vh);
-  background-color: variables.$colorDocumentDark;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: calc(var(--height, 100vh) - (variables.$padSpace * 2));
+  border-radius: variables.$lineJoin;
+  overflow: hidden;
+  @include variables.glass($bg: rgba(variables.$colorDocumentDark, 0.6), $blur: 24px);
+  box-shadow: variables.$shadowContainer, variables.$shadowGlow;
+
+  @media #{variables.$screenMedium} {
+    min-height: calc(var(--height, 100vh) - (variables.$padSpace * 3));
+  }
 
   & > .player-bg,
   & > .player-canvas {
@@ -44,22 +56,16 @@
     height: 100%;
   }
   & > .player-bg {
-    background-position: bottom right;
+    background-position: center;
     background-repeat: no-repeat;
     background-size: cover;
-    opacity: .4;
+    opacity: .15;
     z-index: 1;
+    filter: saturate(0.8);
   }
   & > .player-canvas {
     z-index: 2;
-  }
-  @media #{variables.$screenMedium} {
-    margin: 0 (variables.$padSpace * 2);
-    max-width: 1080px;
-    height: calc(var(--height, 100vh) - (#{variables.$padSpace} * 4));
-    max-height: 700px;
-    border-radius: variables.$lineJoin;
-    box-shadow: variables.$shadowContainer;
+    opacity: 0.6;
   }
 }
 
@@ -70,31 +76,46 @@
   align-items: stretch;
   justify-content: stretch;
   height: 100%;
+  min-height: calc(var(--height, 100vh) - (variables.$padSpace * 2));
   position: relative;
   z-index: 3;
+
+  @media #{variables.$screenMedium} {
+    min-height: calc(var(--height, 100vh) - (variables.$padSpace * 3));
+  }
 
   .player-header,
   .player-content,
   .player-footer {
     position: relative;
   }
+
   .player-header,
   .player-footer {
     padding: 0 variables.$padSpace;
     height: variables.$headerHeight;
     min-height: variables.$headerHeight;
-    // background-color: $colorCard;
   }
+
   .player-header {
+    border-bottom: 1px solid rgba(variables.$colorPrimary, 0.12);
+
     & > h2 {
-      color: variables.$colorPrimary;
-      i { vertical-align: bottom; }
+      color: variables.$colorBright;
+      font-size: 120%;
+      i {
+        color: variables.$colorPrimary;
+        vertical-align: bottom;
+        margin-right: 0.3em;
+      }
     }
   }
+
   .player-logo {
     font-weight: 800;
-    letter-spacing: -0.05em;
+    letter-spacing: -0.03em;
   }
+
   .player-content {
     flex: 1;
     height: 100%;
@@ -103,19 +124,288 @@
     padding: variables.$padSpace;
     @include variables.customScrollbar;
 
-    & > section {
-      margin: auto 0; // prevent vertical aligned flex item from overflowing
-    }
     @media #{variables.$screenMedium} {
-      padding: variables.$padSpace (variables.$padSpace * 2);
+      padding: calc(variables.$padSpace * 1.5);
     }
+  }
+
+  .player-footer {
+    border-top: 1px solid rgba(variables.$colorPrimary, 0.12);
   }
 }
 
 // player greeting message
 .player-greet {
-  flex: 1;
-  @media #{variables.$screenMedium} { flex: .5; }
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 100%;
+
+  h1 {
+    font-size: 220%;
+    color: variables.$colorBright;
+    margin-bottom: 0.3em;
+  }
+
+  p {
+    max-width: 500px;
+    color: rgba(variables.$colorBright, 0.75);
+    margin-bottom: 1.5em;
+  }
+}
+
+// dashboard grid
+.player-dashboard {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: variables.$padSpace;
+  height: 100%;
+  min-height: 100%;
+
+  @media #{variables.$screenMedium} {
+    grid-template-columns: minmax(320px, 1.2fr) minmax(280px, 0.8fr);
+    gap: calc(variables.$padSpace * 1.5);
+  }
+}
+
+// central now-playing card
+.now-playing-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: calc(variables.$padSpace * 2);
+  border-radius: variables.$lineJoin;
+  @include variables.glass($bg: rgba(variables.$colorDocumentLight, 0.12), $blur: 20px);
+  border: 1px solid rgba(variables.$colorPrimary, 0.2);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 0%, rgba(variables.$colorPrimary, 0.12) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .np-artwork {
+    position: relative;
+    width: 160px;
+    height: 160px;
+    margin-bottom: calc(variables.$padSpace * 1.5);
+
+    @media #{variables.$screenSmall} {
+      width: 200px;
+      height: 200px;
+    }
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35), 0 0 0 6px rgba(variables.$colorPrimary, 0.15);
+    }
+
+    .np-live-badge {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      background: linear-gradient(135deg, variables.$colorSecondary, color.adjust(variables.$colorSecondary, $lightness: -10%));
+      color: variables.$colorDocumentDark;
+      font-size: 65%;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 0.25em 0.7em;
+      border-radius: 100px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    }
+  }
+
+  .np-station {
+    font-size: 90%;
+    color: variables.$colorPrimary;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 800;
+    margin-bottom: 0.4em;
+  }
+
+  .np-title {
+    font-size: 180%;
+    color: variables.$colorBright;
+    margin-bottom: 0.2em;
+    line-height: 1.2;
+  }
+
+  .np-subtitle {
+    font-size: 110%;
+    color: rgba(variables.$colorBright, 0.7);
+    margin-bottom: 1.2em;
+  }
+
+  .np-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.8em;
+    margin-bottom: 1.5em;
+    font-size: 85%;
+    color: rgba(variables.$colorBright, 0.6);
+
+    span {
+      display: inline-flex;
+      align-items: center;
+    }
+
+    i {
+      margin-right: 0.35em;
+      color: variables.$colorSecondary;
+    }
+  }
+
+  .np-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1em;
+    width: 100%;
+    max-width: 360px;
+
+    .np-main-control {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .np-volume {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      gap: 0.6em;
+    }
+  }
+}
+
+// station grid sidebar
+.station-panel {
+  display: flex;
+  flex-direction: column;
+  gap: variables.$padSpace;
+  min-height: 0;
+
+  .station-search {
+    flex: 0 0 auto;
+  }
+
+  .station-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: calc(variables.$padSpace / 1.2);
+    overflow-y: auto;
+    flex: 1;
+    padding-right: 4px;
+    @include variables.customScrollbar;
+
+    @media #{variables.$screenSmall} {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+}
+
+.station-card {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.8em;
+  padding: calc(variables.$padSpace / 1.2);
+  border-radius: variables.$lineJoin;
+  @include variables.glass;
+  cursor: pointer;
+  transition: transform variables.$fxSpeed variables.$fxEase,
+              background-color variables.$fxSpeed variables.$fxEase,
+              border-color variables.$fxSpeed variables.$fxEase;
+
+  &:hover {
+    background-color: rgba(variables.$colorPrimary, 0.1);
+    border-color: rgba(variables.$colorPrimary, 0.35);
+    transform: translateY(-2px);
+  }
+
+  &.active {
+    background-color: rgba(variables.$colorPrimary, 0.18);
+    border-color: rgba(variables.$colorPrimary, 0.5);
+    box-shadow: 0 0 20px rgba(variables.$colorPrimary, 0.12);
+
+    .station-name {
+      color: variables.$colorPrimaryText;
+    }
+  }
+
+  img {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    object-fit: cover;
+    flex-shrink: 0;
+    background-color: rgba(variables.$colorBright, 0.08);
+  }
+
+  .station-info {
+    flex: 1;
+    min-width: 0;
+    text-align: left;
+  }
+
+  .station-name {
+    font-size: 95%;
+    color: variables.$colorBright;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .station-genre {
+    font-size: 75%;
+    color: rgba(variables.$colorBright, 0.55);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .station-listeners {
+    font-size: 80%;
+    color: variables.$colorSecondary;
+    white-space: nowrap;
+
+    i {
+      margin-right: 0.2em;
+    }
+  }
+}
+
+// recitation history
+.recitation-history {
+  margin-top: variables.$padSpace;
+
+  .history-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    font-size: 95%;
+    color: variables.$colorPrimaryText;
+    margin-bottom: calc(variables.$padSpace / 1.5);
+
+    i {
+      color: variables.$colorSecondary;
+    }
+  }
 }
 
 // player tracklist
@@ -125,16 +415,34 @@
   list-style: none;
 
   & > li + li {
-    margin-top: variables.$padSpace;
+    margin-top: calc(variables.$padSpace / 1.5);
   }
 }
 
 // player footer controls
 .player-controls {
-  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  color: variables.$colorBright;
+
+  .controls-left {
+    display: flex;
+    align-items: center;
+    gap: 0.8em;
+  }
+
+  .controls-right {
+    display: flex;
+    align-items: center;
+    gap: 0.8em;
+    font-size: 85%;
+    color: rgba(variables.$colorBright, 0.65);
+  }
 }
 
-// player stations sidebar
+// player stations overlay + sidebar (legacy mobile fallback)
 .player-stations {
   position: absolute;
   overflow: hidden;
@@ -158,7 +466,7 @@
     width: 100vw;
     min-height: 100%;
     max-height: 100%;
-    background-color: color.adjust(variables.$colorDocumentDark, $lightness: 2%);
+    background-color: variables.$colorDocumentDark;
 
     @media #{variables.$screenSmall} {
       width: 420px;
@@ -168,68 +476,58 @@
     .player-stations-footer {
       padding: 0 variables.$padSpace;
       min-height: variables.$headerHeight;
-      box-shadow: 0 0 3px rgba(black, 0.3);
+      border-bottom: 1px solid rgba(variables.$colorPrimary, 0.12);
     }
+
+    .player-stations-footer {
+      border-top: 1px solid rgba(variables.$colorPrimary, 0.12);
+      border-bottom: 0;
+    }
+
     .player-stations-list {
       display: block;
       list-style: none;
       overflow: hidden;
       overflow-y: auto;
-      margin-left: -10px;
-      padding-left: 10px;
+      padding: calc(variables.$padSpace / 1.5);
       flex: 1;
       @include variables.customScrollbar;
-
-      .player-stations-list-item {
-        position: relative;
-        padding: variables.$padSpace;
-        background-color: rgba(black, 0.1);
-        cursor: pointer;
-
-        &:nth-child(odd) {
-          background-color: rgba(black, 0.18);
-        }
-        &:hover {
-          background-color: rgba(black, 0);
-        }
-        &:focus, &:active, &.active {
-          background-color: color.adjust(variables.$colorDocumentDark, $lightness: -2%);
-          .player-stations-list-title { color: variables.$colorPrimary; }
-        }
-      }
     }
   }
 
-  // bring to front
   &.active {
     pointer-events: auto;
     z-index: 1000;
   }
 
-  // slide out
   &.visible {
     background-color: variables.$colorOverlay;
 
     .player-stations-sidebar {
-      transform: translate3d(0, 0, 0);
       transform: translateX(-100vw);
+      box-shadow: variables.$shadowOverlay;
 
       @media #{variables.$screenSmall} {
         transform: translateX(-420px);
-        box-shadow: variables.$shadowOverlay;
       }
     }
-    .player-stations-list-item.active:before {
-      display: block;
-      position: absolute;
-      transition: none;
-      transform: translateY(-50%);
-      top: 50%;
-      left: -10px;
-      border-top: 10px solid transparent;
-      border-bottom: 10px solid transparent;
-      border-right: 10px solid color.adjust(variables.$colorDocumentDark, $lightness: -2%);
-      content: '';
-    }
+  }
+}
+
+// show error messages
+.player-errors {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 100%;
+
+  i {
+    color: variables.$colorSecondary;
+  }
+
+  h3 {
+    color: variables.$colorBright;
   }
 }

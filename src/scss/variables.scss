@@ -4,36 +4,39 @@ $padSpace: 1em;
 $padSmall: calc($padSpace / 2);
 $headerHeight: 3.6em;
 
-// document colors
-$colorDocument: #8086a0;
-$colorDocumentDark: #1e1f30;
-$colorDocumentDarker: color.adjust($colorDocumentDark, $lightness: -10%);
-$colorDocumentLight: #a0a6b0;
-$colorDocumentText: color.adjust(color.adjust($colorDocumentDark, $lightness: 40%), $saturation: -5%);
+// Islamic dark palette
+$colorDocument: #0f172a;        // deep navy
+$colorDocumentDark: #0b1221;    // darker navy
+$colorDocumentDarker: #060c18;  // almost black navy
+$colorDocumentLight: #1e293b;   // card backgrounds
+$colorDocumentText: #e2e8f0;    // soft white/cream text
 
-// common colors
-$colorPrimary: crimson;
-$colorPrimaryText: color.adjust($colorPrimary, $lightness: 40%);
-$colorSecondary: cornflowerblue;
-$colorSecondaryText: color.adjust($colorSecondary, $lightness: -40%);
-$colorDefault: lightslategray;
-$colorDefaultText: color.adjust($colorDefault, $lightness: -40%);
-$colorGrey: slategray;
-$colorGreyText: color.adjust($colorGrey, $lightness: -40%);
-$colorBright: whitesmoke;
-$colorBrightText: color.adjust($colorBright, $lightness: -40%);
-$colorOverlay: rgba(black, 0.4);
-$colorCard: rgba(black, 0.2);
+// Islamic accents
+$colorPrimary: #10b981;         // emerald green
+$colorPrimaryText: #d1fae5;     // light emerald
+$colorSecondary: #f59e0b;        // warm gold
+$colorSecondaryText: #451a03;   // dark gold text
+$colorDefault: #64748b;         // slate
+$colorDefaultText: #f1f5f9;
+$colorGrey: #475569;
+$colorGreyText: #f8fafc;
+$colorBright: #f8fafc;          // bright white/cream
+$colorBrightText: #0f172a;
+
+// overlays & cards
+$colorOverlay: rgba(0, 0, 0, 0.55);
+$colorCard: rgba(255, 255, 255, 0.06);
+$colorCardHover: rgba(255, 255, 255, 0.1);
 
 // scrollbar colors
-$scrollTrack: color.adjust($colorDocumentDark, $lightness: -4%);
-$scrollThumb: color.adjust($colorDocumentDark, $lightness: 12%);
+$scrollTrack: $colorDocumentDarker;
+$scrollThumb: color.adjust($colorPrimary, $lightness: -10%, $alpha: 0.6);
 
 // borders and lines
-$lineWidth: 2px;
+$lineWidth: 1px;
 $lineStyle: solid;
-$lineColor: rgba(black, 0.08);
-$lineJoin: 6px;
+$lineColor: rgba($colorPrimary, 0.2);
+$lineJoin: 16px;
 
 // base font options
 $fontFamily: 'Assistant', sans-serif;
@@ -42,13 +45,14 @@ $fontSpace: 1.4em;
 $fontWeight: 700;
 
 // focus effects
-$focusText: 0 0 12px rgba(darkorange, .5);
-$focusBox: 0 0 12px rgba(darkorange, .5);
+$focusText: 0 0 12px rgba($colorSecondary, .5);
+$focusBox: 0 0 12px rgba($colorSecondary, .5);
 
 // shadow styles
-$shadowContainer: 0 1px 30px rgba(black, 0.8);
-$shadowOverlay: 0 1px 20px rgba(black, 0.6);
+$shadowContainer: 0 1px 30px rgba(0, 0, 0, 0.6);
+$shadowOverlay: 0 1px 20px rgba(0, 0, 0, 0.5);
 $shadowPaper: 0 12px 15px rgba(0, 0, 0, 0.3);
+$shadowGlow: 0 0 40px rgba($colorPrimary, 0.15);
 
 // transition props
 $fxSpeed: 400ms;
@@ -69,21 +73,28 @@ $screenSmall: "only screen and (min-width: #{$sizeSmall})";
 $screenMedium: "only screen and (min-width: #{$sizeMedium})";
 $screenLarge: "only screen and (min-width: #{$sizeLarge})";
 
+// glassmorphism helper
+@mixin glass($bg: $colorCard, $blur: 16px) {
+  background: $bg;
+  backdrop-filter: blur($blur);
+  -webkit-backdrop-filter: blur($blur);
+  border: $lineWidth $lineStyle rgba($colorPrimary, 0.15);
+}
+
 // customized scrollbars
 @mixin customScrollbar {
   scrollbar-width: thin;
   scrollbar-color: $scrollThumb $scrollTrack;
 
   &::-webkit-scrollbar {
-    width: 10px;
+    width: 8px;
   }
   &::-webkit-scrollbar-track {
     background-color: $scrollTrack;
+    border-radius: 10px;
   }
   &::-webkit-scrollbar-thumb {
     background-color: $scrollThumb;
     border-radius: 10px;
-    border: 2px solid $scrollTrack;
   }
 }
-
