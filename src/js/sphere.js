@@ -36,7 +36,7 @@ export default {
     // outer crescent ring
     const ringGeometry = new THREE.TorusGeometry(90, 2, 16, 80)
     const ringMaterial = new THREE.MeshBasicMaterial({
-      color: 0xf59e0b,
+      color: 0x38bdf8,
       transparent: true,
       opacity: 0.22,
       side: THREE.DoubleSide,

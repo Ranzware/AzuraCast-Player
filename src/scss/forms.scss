@@ -54,13 +54,13 @@
   }
 
   &.loading {
-    animation: pulse-gold 1.5s ease-in-out infinite;
+    animation: pulse-emerald 1.5s ease-in-out infinite;
   }
 }
 
-@keyframes pulse-gold {
+@keyframes pulse-emerald {
   0%, 100% { box-shadow: 0 0 0 4px rgba(variables.$colorPrimary, 0.2); }
-  50% { box-shadow: 0 0 0 10px rgba(variables.$colorSecondary, 0.15); }
+  50% { box-shadow: 0 0 0 10px rgba(variables.$colorPrimary, 0.35); }
 }
 
 // common cta button/link

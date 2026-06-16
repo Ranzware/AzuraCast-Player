@@ -17,14 +17,14 @@
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  justify-content: flex-start;
+  justify-content: center;
   width: 100%;
-  min-height: var(--height, 100vh);
-  padding: variables.$padSpace;
+  height: 100vh;
+  padding: 0.6em;
   box-sizing: border-box;
 
   @media #{variables.$screenMedium} {
-    padding: calc(variables.$padSpace * 1.5);
+    padding: 0.8em;
   }
 }
 
@@ -34,17 +34,14 @@
   flex-direction: column;
   position: relative;
   width: 100%;
-  max-width: 1200px;
+  max-width: 1100px;
   margin: 0 auto;
-  min-height: calc(var(--height, 100vh) - (variables.$padSpace * 2));
+  height: 100%;
+  max-height: 100%;
   border-radius: variables.$lineJoin;
   overflow: hidden;
-  @include variables.glass($bg: rgba(variables.$colorDocumentDark, 0.6), $blur: 24px);
+  @include variables.glass($bg: rgba(variables.$colorDocumentDark, 0.55), $blur: 24px);
   box-shadow: variables.$shadowContainer, variables.$shadowGlow;
-
-  @media #{variables.$screenMedium} {
-    min-height: calc(var(--height, 100vh) - (variables.$padSpace * 3));
-  }
 
   & > .player-bg,
   & > .player-canvas {
@@ -59,13 +56,13 @@
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;
-    opacity: .15;
+    opacity: .12;
     z-index: 1;
-    filter: saturate(0.8);
+    filter: saturate(0.6);
   }
   & > .player-canvas {
     z-index: 2;
-    opacity: 0.6;
+    opacity: 0.5;
   }
 }
 
@@ -76,13 +73,9 @@
   align-items: stretch;
   justify-content: stretch;
   height: 100%;
-  min-height: calc(var(--height, 100vh) - (variables.$padSpace * 2));
+  max-height: 100%;
   position: relative;
   z-index: 3;
-
-  @media #{variables.$screenMedium} {
-    min-height: calc(var(--height, 100vh) - (variables.$padSpace * 3));
-  }
 
   .player-header,
   .player-content,
@@ -102,7 +95,7 @@
 
     & > h2 {
       color: variables.$colorBright;
-      font-size: 120%;
+      font-size: 115%;
       i {
         color: variables.$colorPrimary;
         vertical-align: bottom;
@@ -118,14 +111,12 @@
 
   .player-content {
     flex: 1;
-    height: 100%;
+    min-height: 0;
     overflow: hidden;
-    overflow-y: auto;
-    padding: variables.$padSpace;
-    @include variables.customScrollbar;
+    padding: 0.8em;
 
     @media #{variables.$screenMedium} {
-      padding: calc(variables.$padSpace * 1.5);
+      padding: 1em;
     }
   }
 
@@ -141,18 +132,19 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  min-height: 100%;
+  height: 100%;
 
   h1 {
-    font-size: 220%;
+    font-size: 180%;
     color: variables.$colorBright;
     margin-bottom: 0.3em;
   }
 
   p {
-    max-width: 500px;
+    max-width: 460px;
     color: rgba(variables.$colorBright, 0.75);
-    margin-bottom: 1.5em;
+    margin-bottom: 1.2em;
+    font-size: 90%;
   }
 }
 
@@ -160,13 +152,13 @@
 .player-dashboard {
   display: grid;
   grid-template-columns: 1fr;
-  gap: variables.$padSpace;
+  gap: 0.8em;
   height: 100%;
-  min-height: 100%;
+  min-height: 0;
 
   @media #{variables.$screenMedium} {
-    grid-template-columns: minmax(320px, 1.2fr) minmax(280px, 0.8fr);
-    gap: calc(variables.$padSpace * 1.5);
+    grid-template-columns: minmax(300px, 1.1fr) minmax(260px, 0.75fr);
+    gap: 1em;
   }
 }
 
@@ -177,12 +169,13 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: calc(variables.$padSpace * 2);
+  padding: 1em;
   border-radius: variables.$lineJoin;
-  @include variables.glass($bg: rgba(variables.$colorDocumentLight, 0.12), $blur: 20px);
-  border: 1px solid rgba(variables.$colorPrimary, 0.2);
+  @include variables.glass($bg: rgba(variables.$colorDocumentLight, 0.1), $blur: 20px);
+  border: 1px solid rgba(variables.$colorPrimary, 0.18);
   position: relative;
   overflow: hidden;
+  min-height: 0;
 
   &::before {
     content: '';
@@ -194,13 +187,18 @@
 
   .np-artwork {
     position: relative;
-    width: 160px;
-    height: 160px;
-    margin-bottom: calc(variables.$padSpace * 1.5);
+    width: 120px;
+    height: 120px;
+    margin-bottom: 0.8em;
 
     @media #{variables.$screenSmall} {
-      width: 200px;
-      height: 200px;
+      width: 150px;
+      height: 150px;
+    }
+
+    @media #{variables.$screenMedium} {
+      width: 170px;
+      height: 170px;
     }
 
     img {
@@ -208,45 +206,49 @@
       height: 100%;
       object-fit: cover;
       border-radius: 50%;
-      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35), 0 0 0 6px rgba(variables.$colorPrimary, 0.15);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35), 0 0 0 5px rgba(variables.$colorPrimary, 0.15);
     }
 
     .np-live-badge {
       position: absolute;
       bottom: 0;
       right: 0;
-      background: linear-gradient(135deg, variables.$colorSecondary, color.adjust(variables.$colorSecondary, $lightness: -10%));
+      background: variables.$colorPrimary;
       color: variables.$colorDocumentDark;
-      font-size: 65%;
+      font-size: 60%;
       font-weight: 800;
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      padding: 0.25em 0.7em;
+      padding: 0.2em 0.6em;
       border-radius: 100px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
     }
   }
 
   .np-station {
-    font-size: 90%;
+    font-size: 80%;
     color: variables.$colorPrimary;
     text-transform: uppercase;
     letter-spacing: 0.1em;
     font-weight: 800;
-    margin-bottom: 0.4em;
+    margin-bottom: 0.3em;
   }
 
   .np-title {
-    font-size: 180%;
+    font-size: 140%;
     color: variables.$colorBright;
-    margin-bottom: 0.2em;
+    margin-bottom: 0.15em;
     line-height: 1.2;
+
+    @media #{variables.$screenMedium} {
+      font-size: 160%;
+    }
   }
 
   .np-subtitle {
-    font-size: 110%;
+    font-size: 95%;
     color: rgba(variables.$colorBright, 0.7);
-    margin-bottom: 1.2em;
+    margin-bottom: 0.8em;
   }
 
   .np-meta {
@@ -254,10 +256,10 @@
     flex-wrap: wrap;
     align-items: center;
     justify-content: center;
-    gap: 0.8em;
-    margin-bottom: 1.5em;
-    font-size: 85%;
-    color: rgba(variables.$colorBright, 0.6);
+    gap: 0.7em;
+    margin-bottom: 1em;
+    font-size: 80%;
+    color: rgba(variables.$colorBright, 0.65);
 
     span {
       display: inline-flex;
@@ -274,9 +276,9 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1em;
+    gap: 0.8em;
     width: 100%;
-    max-width: 360px;
+    max-width: 320px;
 
     .np-main-control {
       display: flex;
@@ -297,7 +299,7 @@
 .station-panel {
   display: flex;
   flex-direction: column;
-  gap: variables.$padSpace;
+  gap: 0.7em;
   min-height: 0;
 
   .station-search {
@@ -307,10 +309,10 @@
   .station-grid {
     display: flex;
     flex-direction: column;
-    gap: calc(variables.$padSpace / 1.5);
+    gap: 0.5em;
     overflow-y: auto;
     flex: 1;
-    padding-right: 4px;
+    padding-right: 3px;
     @include variables.customScrollbar;
   }
 }
@@ -319,8 +321,8 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 0.7em;
-  padding: 0.65em 0.8em;
+  gap: 0.65em;
+  padding: 0.55em 0.75em;
   border-radius: 12px;
   @include variables.glass;
   cursor: pointer;
@@ -331,13 +333,13 @@
   &:hover {
     background-color: rgba(variables.$colorPrimary, 0.1);
     border-color: rgba(variables.$colorPrimary, 0.35);
-    transform: translateY(-2px);
+    transform: translateY(-1px);
   }
 
   &.active {
     background-color: rgba(variables.$colorPrimary, 0.18);
     border-color: rgba(variables.$colorPrimary, 0.5);
-    box-shadow: 0 0 20px rgba(variables.$colorPrimary, 0.12);
+    box-shadow: 0 0 15px rgba(variables.$colorPrimary, 0.1);
 
     .station-name {
       color: variables.$colorPrimaryText;
@@ -345,8 +347,8 @@
   }
 
   img {
-    width: 46px;
-    height: 46px;
+    width: 42px;
+    height: 42px;
     border-radius: 10px;
     object-fit: cover;
     flex-shrink: 0;
@@ -360,7 +362,7 @@
   }
 
   .station-name {
-    font-size: 88%;
+    font-size: 85%;
     color: variables.$colorBright;
     font-weight: 700;
     white-space: nowrap;
@@ -369,14 +371,14 @@
   }
 
   .station-genre {
-    font-size: 70%;
+    font-size: 65%;
     color: rgba(variables.$colorBright, 0.55);
     text-transform: uppercase;
     letter-spacing: 0.05em;
   }
 
   .station-listeners {
-    font-size: 75%;
+    font-size: 70%;
     color: variables.$colorSecondary;
     white-space: nowrap;
 
@@ -386,17 +388,19 @@
   }
 }
 
-// recitation history
+// recitation history (compact, no scroll)
 .recitation-history {
-  margin-top: variables.$padSpace;
+  margin-top: 0.6em;
+  flex: 0 0 auto;
+  max-width: 100%;
 
   .history-title {
     display: flex;
     align-items: center;
-    gap: 0.5em;
-    font-size: 95%;
+    gap: 0.4em;
+    font-size: 80%;
     color: variables.$colorPrimaryText;
-    margin-bottom: calc(variables.$padSpace / 1.5);
+    margin-bottom: 0.4em;
 
     i {
       color: variables.$colorSecondary;
@@ -406,12 +410,37 @@
 
 // player tracklist
 .player-tracklist {
-  display: block;
-  position: relative;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 0.5em;
   list-style: none;
 
-  & > li + li {
-    margin-top: calc(variables.$padSpace / 1.5);
+  > li {
+    flex: 1 1 calc(50% - 0.5em);
+    min-width: 140px;
+    padding: 0.55em;
+    margin: 0 !important;
+
+    .history-cover {
+      width: 44px;
+      height: 44px;
+      border-radius: 8px;
+    }
+
+    .text-secondary {
+      font-size: 85%;
+      display: block;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .text-default,
+    .text-bright,
+    .text-faded {
+      font-size: 75%;
+    }
   }
 }
 
@@ -426,14 +455,14 @@
   .controls-left {
     display: flex;
     align-items: center;
-    gap: 0.8em;
+    gap: 0.7em;
   }
 
   .controls-right {
     display: flex;
     align-items: center;
-    gap: 0.8em;
-    font-size: 85%;
+    gap: 0.7em;
+    font-size: 80%;
     color: rgba(variables.$colorBright, 0.65);
   }
 }
@@ -517,7 +546,7 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  min-height: 100%;
+  height: 100%;
 
   i {
     color: variables.$colorSecondary;

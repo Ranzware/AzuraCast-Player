@@ -2,40 +2,40 @@
 // spacing and padding
 $padSpace: 1em;
 $padSmall: calc($padSpace / 2);
-$headerHeight: 3.6em;
+$headerHeight: 3.2em;
 
-// Islamic dark palette
-$colorDocument: #0f172a;        // deep navy
-$colorDocumentDark: #0b1221;    // darker navy
-$colorDocumentDarker: #060c18;  // almost black navy
-$colorDocumentLight: #1e293b;   // card backgrounds
-$colorDocumentText: #e2e8f0;    // soft white/cream text
+// Royal Blue + White + Emerald palette
+$colorDocument: #0d1b2a;        // rich royal blue
+$colorDocumentDark: #0a1422;    // deeper royal blue
+$colorDocumentDarker: #050e18;  // almost black blue
+$colorDocumentLight: #1b2838;   // lighter royal blue for cards
+$colorDocumentText: #f8fafc;     // crisp white text
 
 // Islamic accents
-$colorPrimary: #10b981;         // emerald green
-$colorPrimaryText: #d1fae5;     // light emerald
-$colorSecondary: #f59e0b;        // warm gold
-$colorSecondaryText: #451a03;   // dark gold text
-$colorDefault: #64748b;         // slate
+$colorPrimary: #10b981;          // emerald green
+$colorPrimaryText: #d1fae5;      // light emerald
+$colorSecondary: #38bdf8;        // soft sky blue
+$colorSecondaryText: #0d1b2a;   // dark blue text on light blue
+$colorDefault: #64748b;          // slate
 $colorDefaultText: #f1f5f9;
 $colorGrey: #475569;
 $colorGreyText: #f8fafc;
-$colorBright: #f8fafc;          // bright white/cream
-$colorBrightText: #0f172a;
+$colorBright: #ffffff;           // pure white
+$colorBrightText: #0d1b2a;
 
 // overlays & cards
-$colorOverlay: rgba(0, 0, 0, 0.55);
-$colorCard: rgba(255, 255, 255, 0.06);
-$colorCardHover: rgba(255, 255, 255, 0.1);
+$colorOverlay: rgba(0, 0, 0, 0.5);
+$colorCard: rgba(255, 255, 255, 0.07);
+$colorCardHover: rgba(255, 255, 255, 0.12);
 
 // scrollbar colors
 $scrollTrack: $colorDocumentDarker;
-$scrollThumb: color.adjust($colorPrimary, $lightness: -10%, $alpha: 0.6);
+$scrollThumb: rgba($colorPrimary, 0.5);
 
 // borders and lines
 $lineWidth: 1px;
 $lineStyle: solid;
-$lineColor: rgba($colorPrimary, 0.2);
+$lineColor: rgba($colorPrimary, 0.18);
 $lineJoin: 16px;
 
 // base font options
@@ -45,14 +45,14 @@ $fontSpace: 1.4em;
 $fontWeight: 700;
 
 // focus effects
-$focusText: 0 0 12px rgba($colorSecondary, .5);
-$focusBox: 0 0 12px rgba($colorSecondary, .5);
+$focusText: 0 0 12px rgba($colorPrimary, .6);
+$focusBox: 0 0 12px rgba($colorPrimary, .5);
 
 // shadow styles
-$shadowContainer: 0 1px 30px rgba(0, 0, 0, 0.6);
-$shadowOverlay: 0 1px 20px rgba(0, 0, 0, 0.5);
+$shadowContainer: 0 1px 30px rgba(0, 0, 0, 0.55);
+$shadowOverlay: 0 1px 20px rgba(0, 0, 0, 0.45);
 $shadowPaper: 0 12px 15px rgba(0, 0, 0, 0.3);
-$shadowGlow: 0 0 40px rgba($colorPrimary, 0.15);
+$shadowGlow: 0 0 40px rgba($colorPrimary, 0.18);
 
 // transition props
 $fxSpeed: 400ms;
@@ -78,7 +78,7 @@ $screenLarge: "only screen and (min-width: #{$sizeLarge})";
   background: $bg;
   backdrop-filter: blur($blur);
   -webkit-backdrop-filter: blur($blur);
-  border: $lineWidth $lineStyle rgba($colorPrimary, 0.15);
+  border: $lineWidth $lineStyle rgba($colorPrimary, 0.12);
 }
 
 // customized scrollbars
@@ -87,7 +87,7 @@ $screenLarge: "only screen and (min-width: #{$sizeLarge})";
   scrollbar-color: $scrollThumb $scrollTrack;
 
   &::-webkit-scrollbar {
-    width: 8px;
+    width: 6px;
   }
   &::-webkit-scrollbar-track {
     background-color: $scrollTrack;

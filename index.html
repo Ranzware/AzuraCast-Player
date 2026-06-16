@@ -34,8 +34,9 @@
         padding: 0;
         position: relative;
         overflow: hidden;
+        height: 100vh;
         min-height: 100vh;
-        background-color: #0b1221;
+        background-color: #0a1422;
       }
       #_spnr {
         display: flex;
@@ -215,41 +216,6 @@
                   </div>
                 </div>
 
-                <!-- recent recitations -->
-                <div class="recitation-history" v-if="hasHistorySongs">
-                  <div class="history-title">
-                    <i class="ico ico-collection"></i> Recent Recitations
-                  </div>
-                  <ul class="player-tracklist">
-                    <li
-                      v-for="(historyItem, index) in songHistory"
-                      :key="index"
-                      class="card fx flex-row flex-top flex-stretch"
-                      :class="'fx-slide-left fx-delay-' + ( index + 3 )"
-                    >
-                      <div>
-                        <img
-                          class="history-cover"
-                          :alt="historyItem.song.title"
-                          :src="songHistoryCoverArt[index] || historyItem.song.art"
-                        />
-                      </div>
-                      <div class="pad-left">
-                        <div>
-                          <span class="text-secondary">{{ historyItem.song.title || "N/A" }}</span>
-                        </div>
-                        <div>
-                          <span class="text-faded">Reciter:</span>&nbsp;
-                          <span class="text-default">{{ historyItem.song.artist || "N/A" }}</span>
-                        </div>
-                        <div>
-                          <span class="text-faded">Played at:</span>&nbsp;
-                          <span class="text-default">{{ getPlayAt(historyItem.played_at) }}</span>
-                        </div>
-                      </div>
-                    </li>
-                  </ul>
-                </div>
               </article>
 
               <!-- station grid panel -->
